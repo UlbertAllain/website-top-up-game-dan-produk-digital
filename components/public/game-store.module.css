@@ -1,0 +1,149 @@
+.shell {
+  --game-ink: #06080d;
+  --game-panel: #0d1119;
+  --game-panel-soft: #131926;
+  --game-line: rgba(255, 255, 255, 0.1);
+  --game-muted: #8f99ab;
+  --game-accent: #356df3;
+  --game-accent-soft: #9eb8ff;
+  --game-paper: #f2f4f8;
+}
+
+.heroBackdrop {
+  background:
+    radial-gradient(circle at 78% 18%, rgba(53, 109, 243, 0.22), transparent 30%),
+    radial-gradient(circle at 20% 90%, rgba(53, 109, 243, 0.09), transparent 28%),
+    #06080d;
+}
+
+.blueprint {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 68px 68px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.92), transparent 90%);
+}
+
+.noise::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  opacity: 0.18;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+.heroMedia {
+  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 0 12%);
+}
+
+.cutPanel {
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+}
+
+.cutPanelReverse {
+  clip-path: polygon(28px 0, 100% 0, 100% 100%, 0 100%, 0 28px);
+}
+
+.categoryCard {
+  position: relative;
+  isolation: isolate;
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%);
+}
+
+.categoryCard::after {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  content: "";
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.spotlightCard {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.spotlightCard::before {
+  position: absolute;
+  z-index: -1;
+  inset: -35%;
+  content: "";
+  opacity: 0;
+  background: radial-gradient(circle at 70% 20%, rgba(53, 109, 243, 0.22), transparent 35%);
+  transition: opacity 420ms ease;
+}
+
+.spotlightCard:hover::before {
+  opacity: 1;
+}
+
+.productCut {
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+}
+
+.imageMask {
+  mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+}
+
+.marquee {
+  overflow: hidden;
+}
+
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  animation: nexty-marquee 26s linear infinite;
+}
+
+.marquee:hover .marqueeTrack {
+  animation-play-state: paused;
+}
+
+@keyframes nexty-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.verticalLabel {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.faqRow {
+  transition:
+    background-color 220ms ease,
+    padding-left 220ms ease;
+}
+
+.faqRow:hover {
+  padding-left: 0.75rem;
+  background: rgba(53, 109, 243, 0.04);
+}
+
+.pageHero {
+  background:
+    radial-gradient(circle at 80% 18%, rgba(53, 109, 243, 0.2), transparent 28%),
+    linear-gradient(135deg, #080b11 0%, #0d1119 60%, #121a2b 100%);
+}
+
+@media (max-width: 1023px) {
+  .heroMedia {
+    clip-path: polygon(0 5%, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marqueeTrack {
+    animation: none;
+  }
+}
