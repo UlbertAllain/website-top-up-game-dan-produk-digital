@@ -1,0 +1,2027 @@
+diff --git a/app/(public)/layout.tsx b/app/(public)/layout.tsx
+index 187c02e..b0bfa55 100644
+--- a/app/(public)/layout.tsx
++++ b/app/(public)/layout.tsx
+@@ -1,4 +1,5 @@
+ import type { Metadata } from "next";
++import { Barlow_Condensed, Manrope } from "next/font/google";
+ import type { ReactNode } from "react";
+ 
+ import { SiteFooter } from "@/components/public/site-footer";
+@@ -6,6 +7,19 @@ import { SiteHeader } from "@/components/public/site-header";
+ import { getSiteSettings } from "@/features/settings/settings.service";
+ import { createWhatsAppUrl } from "@/lib/whatsapp";
+ 
++const publicBodyFont = Manrope({
++  subsets: ["latin"],
++  variable: "--font-public-body",
++  display: "swap",
++});
++
++const publicDisplayFont = Barlow_Condensed({
++  subsets: ["latin"],
++  weight: ["500", "600", "700"],
++  variable: "--font-public-display",
++  display: "swap",
++});
++
+ type PublicLayoutProps = {
+   children: ReactNode;
+ };
+@@ -17,7 +31,7 @@ function getMetadataBase(): URL {
+     try {
+       return new URL(configuredUrl);
+     } catch {
+-      // Gunakan fallback.
++      // URL produksi belum valid; gunakan localhost sebagai fallback aman.
+     }
+   }
+ 
+@@ -52,14 +66,15 @@ export async function generateMetadata(): Promise<Metadata> {
+ 
+ export default async function PublicLayout({ children }: PublicLayoutProps) {
+   const settings = await getSiteSettings();
+-
+   const whatsappUrl = createWhatsAppUrl(
+     settings.whatsappNumber,
+     "Halo Admin, saya ingin bertanya mengenai produk yang tersedia.",
+   );
+ 
+   return (
+-    <div className="min-h-screen bg-[#f4f1ea]">
++    <div
++      className={`${publicBodyFont.variable} ${publicDisplayFont.variable} public-theme`}
++    >
+       <SiteHeader
+         businessName={settings.businessName}
+         whatsappUrl={whatsappUrl}
+diff --git a/app/globals.css b/app/globals.css
+index f1d8c73..7a275bb 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -1 +1,97 @@
+ @import "tailwindcss";
++
++:root {
++  --public-bg: #080b12;
++  --public-bg-soft: #0d121c;
++  --public-surface: #121925;
++  --public-surface-2: #182131;
++  --public-text: #f7f9fc;
++  --public-muted: #98a3b5;
++  --public-line: rgba(255, 255, 255, 0.09);
++  --public-accent: #5f7cff;
++  --public-accent-strong: #4666f4;
++  --public-ice: #dfe7ff;
++  --public-light: #f3f6fb;
++  --public-light-text: #111827;
++  --public-radius-sm: 16px;
++  --public-radius-md: 22px;
++  --public-radius-lg: 30px;
++  --public-container: 1360px;
++}
++
++html {
++  scroll-behavior: smooth;
++  background: var(--public-bg);
++}
++
++body {
++  margin: 0;
++  min-width: 320px;
++  text-rendering: optimizeLegibility;
++  -webkit-font-smoothing: antialiased;
++  -moz-osx-font-smoothing: grayscale;
++}
++
++::selection {
++  background: rgba(95, 124, 255, 0.32);
++  color: #ffffff;
++}
++
++.public-theme {
++  min-height: 100vh;
++  background: var(--public-bg);
++  color: var(--public-text);
++  font-family: var(--font-public-body), ui-sans-serif, system-ui, sans-serif;
++}
++
++.public-theme h1,
++.public-theme h2,
++.public-theme h3,
++.public-theme h4,
++.public-theme .display-font {
++  font-family: var(--font-public-display), var(--font-public-body), ui-sans-serif, system-ui, sans-serif;
++}
++
++.public-theme a,
++.public-theme button,
++.public-theme input,
++.public-theme select,
++.public-theme textarea,
++.public-theme summary {
++  -webkit-tap-highlight-color: transparent;
++}
++
++.public-theme a:focus-visible,
++.public-theme button:focus-visible,
++.public-theme input:focus-visible,
++.public-theme select:focus-visible,
++.public-theme textarea:focus-visible,
++.public-theme summary:focus-visible {
++  outline: 2px solid var(--public-accent);
++  outline-offset: 3px;
++}
++
++.public-theme details > summary::-webkit-details-marker {
++  display: none;
++}
++
++.public-theme * {
++  scrollbar-width: thin;
++  scrollbar-color: rgba(132, 152, 255, 0.52) rgba(255, 255, 255, 0.04);
++}
++
++.public-theme *::-webkit-scrollbar {
++  width: 8px;
++  height: 8px;
++}
++
++.public-theme *::-webkit-scrollbar-track {
++  background: rgba(255, 255, 255, 0.04);
++}
++
++.public-theme *::-webkit-scrollbar-thumb {
++  border: 2px solid transparent;
++  border-radius: 999px;
++  background: rgba(132, 152, 255, 0.52);
++  background-clip: padding-box;
++}
+diff --git a/components/public/game-commerce.module.css b/components/public/game-commerce.module.css
+index 22c6da5..a0cefc6 100644
+--- a/components/public/game-commerce.module.css
++++ b/components/public/game-commerce.module.css
+@@ -1,116 +1,209 @@
+-.shell {
++.page {
+   position: relative;
++  isolation: isolate;
++  overflow: clip;
++  background:
++    radial-gradient(circle at 82% 4%, rgba(95, 124, 255, 0.13), transparent 24rem),
++    radial-gradient(circle at 16% 30%, rgba(88, 111, 214, 0.08), transparent 28rem),
++    #080b12;
+ }
+ 
+-.shell::before {
+-  content: '';
+-  position: absolute;
++.page::before {
++  content: "";
++  position: fixed;
+   inset: 0;
+-  background:
+-    radial-gradient(circle at 18% 10%, rgba(59, 111, 255, 0.22), transparent 24%),
+-    radial-gradient(circle at 86% 26%, rgba(113, 145, 255, 0.12), transparent 26%),
+-    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
++  z-index: -2;
+   pointer-events: none;
++  background-image:
++    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
++    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
++  background-size: 64px 64px;
++  mask-image: linear-gradient(to bottom, black, transparent 70%);
+ }
+ 
+-.panel {
+-  position: relative;
+-  overflow: hidden;
+-  border: 1px solid rgba(255,255,255,0.08);
+-  background:
+-    linear-gradient(180deg, rgba(13,18,31,0.96), rgba(8,11,20,0.98));
+-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
++.container {
++  width: min(calc(100% - 2rem), var(--public-container));
++  margin-inline: auto;
+ }
+ 
+-.panelLight {
+-  position: relative;
+-  overflow: hidden;
+-  border: 1px solid rgba(12, 18, 32, 0.08);
++.section {
++  padding-block: clamp(3.5rem, 7vw, 7rem);
++}
++
++.sectionCompact {
++  padding-block: clamp(2.5rem, 5vw, 4.5rem);
++}
++
++.surface {
++  border: 1px solid var(--public-line);
++  border-radius: var(--public-radius-lg);
+   background:
+-    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(244,247,252,0.98));
+-  box-shadow: 0 18px 50px rgba(12, 18, 32, 0.08);
++    linear-gradient(145deg, rgba(24, 33, 49, 0.92), rgba(13, 18, 28, 0.97));
++  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+ }
+ 
+-.cut {
+-  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
++.surfaceSoft {
++  border: 1px solid rgba(255, 255, 255, 0.075);
++  border-radius: var(--public-radius-md);
++  background: rgba(255, 255, 255, 0.035);
+ }
+ 
+-.heroMask {
+-  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
++.lightSurface {
++  border: 1px solid rgba(17, 24, 39, 0.08);
++  border-radius: var(--public-radius-lg);
++  background: rgba(255, 255, 255, 0.9);
++  box-shadow: 0 20px 65px rgba(20, 30, 52, 0.08);
+ }
+ 
+-.thumbMask {
+-  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
++.hero {
++  position: relative;
++  min-height: clamp(34rem, 68vw, 44rem);
++  overflow: hidden;
++  border: 1px solid rgba(255, 255, 255, 0.09);
++  border-radius: 2rem;
++  background: #0c111a;
++  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.38);
+ }
+ 
+-.gridOverlay::after {
+-  content: '';
++.hero::after {
++  content: "";
+   position: absolute;
+   inset: 0;
+-  background-image:
+-    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+-    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+-  background-size: 34px 34px;
+-  mix-blend-mode: soft-light;
+-  opacity: 0.3;
+   pointer-events: none;
++  background:
++    linear-gradient(90deg, rgba(8, 11, 18, 0.95) 0%, rgba(8, 11, 18, 0.78) 32%, rgba(8, 11, 18, 0.18) 65%, rgba(8, 11, 18, 0.45) 100%),
++    linear-gradient(180deg, rgba(8, 11, 18, 0.1) 45%, rgba(8, 11, 18, 0.82) 100%);
+ }
+ 
+-.noise::after {
+-  content: '';
+-  position: absolute;
+-  inset: 0;
+-  background-image: radial-gradient(rgba(255,255,255,0.06) 0.7px, transparent 0.7px);
+-  background-size: 12px 12px;
+-  opacity: 0.08;
+-  pointer-events: none;
++.heroContent {
++  position: relative;
++  z-index: 2;
++  display: flex;
++  min-height: inherit;
++  flex-direction: column;
++  justify-content: space-between;
++  padding: clamp(1.5rem, 4vw, 3.5rem);
+ }
+ 
+-.topGlow::before {
+-  content: '';
+-  position: absolute;
+-  left: -10%;
+-  right: -10%;
+-  top: -60%;
+-  height: 240px;
+-  background: radial-gradient(circle, rgba(80, 114, 255, 0.22), transparent 60%);
+-  pointer-events: none;
++.heroTitle {
++  max-width: 11ch;
++  font-size: clamp(3rem, 7vw, 5.6rem);
++  font-weight: 700;
++  line-height: 0.9;
++  letter-spacing: -0.045em;
++  text-transform: uppercase;
++}
++
++.eyebrow {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.6rem;
++  color: #9bb0ff;
++  font-size: 0.72rem;
++  font-weight: 800;
++  letter-spacing: 0.16em;
++  text-transform: uppercase;
++}
++
++.eyebrow::before {
++  content: "";
++  width: 1.75rem;
++  height: 1px;
++  background: currentColor;
+ }
+ 
+-.blueLine {
++.heroRail {
++  display: grid;
++  grid-template-columns: repeat(4, minmax(0, 1fr));
++  gap: 0.75rem;
++  width: min(100%, 43rem);
++}
++
++.heroMetric {
++  border: 1px solid rgba(255, 255, 255, 0.09);
++  border-radius: 1rem;
++  padding: 0.9rem 1rem;
++  background: rgba(7, 10, 17, 0.5);
++  backdrop-filter: blur(14px);
++}
++
++.bentoGrid {
++  display: grid;
++  grid-template-columns: repeat(12, minmax(0, 1fr));
++  grid-auto-rows: 10.5rem;
++  gap: 1rem;
++}
++
++.bentoCard {
+   position: relative;
++  overflow: hidden;
++  border: 1px solid rgba(255, 255, 255, 0.085);
++  border-radius: 1.5rem;
++  background: #101722;
++  transition:
++    transform 220ms ease,
++    border-color 220ms ease,
++    box-shadow 220ms ease;
+ }
+ 
+-.blueLine::after {
+-  content: '';
++.bentoCard:hover {
++  transform: translateY(-4px);
++  border-color: rgba(111, 139, 255, 0.34);
++  box-shadow: 0 24px 58px rgba(0, 0, 0, 0.3);
++}
++
++.bentoImage {
++  object-fit: cover;
++  transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
++}
++
++.bentoCard:hover .bentoImage {
++  transform: scale(1.035);
++}
++
++.bentoOverlay {
+   position: absolute;
+-  left: 0;
+-  bottom: 0;
+-  width: 72px;
+-  height: 2px;
+-  background: linear-gradient(90deg, #3b6fff, transparent);
++  inset: 0;
++  background:
++    linear-gradient(180deg, rgba(7, 11, 18, 0.05), rgba(7, 11, 18, 0.24) 42%, rgba(7, 11, 18, 0.9) 100%);
+ }
+ 
+-.heroTitle {
+-  letter-spacing: -0.05em;
+-  line-height: 0.94;
++.categoryLarge {
++  grid-column: span 7;
++  grid-row: span 3;
+ }
+ 
+-.kicker {
+-  letter-spacing: 0.14em;
++.categoryWide {
++  grid-column: span 5;
++  grid-row: span 2;
+ }
+ 
+-.statStrip {
+-  backdrop-filter: blur(18px);
++.categorySmall {
++  grid-column: span 5;
++  grid-row: span 1;
+ }
+ 
+-.glass {
+-  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+-  border: 1px solid rgba(255,255,255,0.08);
+-  backdrop-filter: blur(14px);
++.featureLayout {
++  display: grid;
++  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
++  gap: 1rem;
++}
++
++.featureArtwork {
++  position: relative;
++  min-height: 34rem;
++  overflow: hidden;
++  border-radius: 1.75rem;
+ }
+ 
+ .productRail {
++  display: grid;
++  grid-auto-flow: column;
++  grid-auto-columns: minmax(15.5rem, 18rem);
++  gap: 1rem;
++  overflow-x: auto;
++  padding: 0.2rem 0.1rem 0.8rem;
++  scroll-snap-type: x mandatory;
+   scrollbar-width: none;
+ }
+ 
+@@ -122,38 +215,150 @@
+   scroll-snap-align: start;
+ }
+ 
+-.fadeBottom {
+-  background: linear-gradient(180deg, rgba(7,11,20,0) 0%, rgba(7,11,20,0.68) 60%, rgba(7,11,20,0.92) 100%);
++.sectionHeading {
++  display: flex;
++  align-items: end;
++  justify-content: space-between;
++  gap: 2rem;
++  margin-bottom: 2rem;
+ }
+ 
+-.labelDot::before {
+-  content: '';
+-  width: 8px;
+-  height: 8px;
+-  border-radius: 9999px;
+-  background: #3b6fff;
+-  display: inline-block;
+-  margin-right: 8px;
++.sectionTitle {
++  max-width: 14ch;
++  font-size: clamp(2.4rem, 5vw, 4.5rem);
++  font-weight: 700;
++  line-height: 0.92;
++  letter-spacing: -0.04em;
++  text-transform: uppercase;
+ }
+ 
+-.softRing {
+-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 0 1px rgba(59, 111, 255, 0.18);
++.orderGrid {
++  display: grid;
++  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
++  gap: 1rem;
+ }
+ 
+-.arrowButton {
+-  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
++.stepList {
++  display: grid;
++  gap: 0.75rem;
+ }
+ 
+-.arrowButton:hover {
+-  transform: translateX(2px);
++.stepCard {
++  display: grid;
++  grid-template-columns: 3.25rem minmax(0, 1fr) 2.4rem;
++  align-items: center;
++  gap: 1rem;
++  border: 1px solid rgba(17, 24, 39, 0.08);
++  border-radius: 1.15rem;
++  padding: 1.15rem;
++  background: rgba(255, 255, 255, 0.8);
+ }
+ 
+-.tileHover {
+-  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
++.reviewFaqGrid {
++  display: grid;
++  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
++  gap: 1rem;
+ }
+ 
+-.tileHover:hover {
+-  transform: translateY(-4px);
+-  border-color: rgba(59,111,255,0.34);
+-  box-shadow: 0 22px 55px rgba(10, 16, 30, 0.32);
++.footerGrid {
++  display: grid;
++  grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(0, 0.7fr));
++  gap: 3rem;
++}
++
++@media (max-width: 1024px) {
++  .hero::after {
++    background:
++      linear-gradient(90deg, rgba(8, 11, 18, 0.9), rgba(8, 11, 18, 0.34)),
++      linear-gradient(180deg, rgba(8, 11, 18, 0.1) 35%, rgba(8, 11, 18, 0.86) 100%);
++  }
++
++  .bentoGrid {
++    grid-template-columns: repeat(2, minmax(0, 1fr));
++    grid-auto-rows: 14rem;
++  }
++
++  .categoryLarge,
++  .categoryWide,
++  .categorySmall {
++    grid-column: span 1;
++    grid-row: span 1;
++  }
++
++  .categoryLarge {
++    grid-column: span 2;
++    grid-row: span 2;
++  }
++
++  .featureLayout,
++  .orderGrid,
++  .reviewFaqGrid {
++    grid-template-columns: 1fr;
++  }
++
++  .footerGrid {
++    grid-template-columns: repeat(2, minmax(0, 1fr));
++  }
++}
++
++@media (max-width: 640px) {
++  .container {
++    width: min(calc(100% - 1rem), var(--public-container));
++  }
++
++  .section {
++    padding-block: 3.75rem;
++  }
++
++  .hero {
++    min-height: 42rem;
++    border-radius: 1.35rem;
++  }
++
++  .heroContent {
++    padding: 1.25rem;
++  }
++
++  .heroTitle {
++    max-width: 9ch;
++    font-size: clamp(2.85rem, 14vw, 4.2rem);
++  }
++
++  .heroRail {
++    grid-template-columns: repeat(2, minmax(0, 1fr));
++  }
++
++  .sectionHeading {
++    align-items: start;
++    flex-direction: column;
++  }
++
++  .bentoGrid {
++    grid-template-columns: 1fr;
++    grid-auto-rows: 17rem;
++  }
++
++  .categoryLarge,
++  .categoryWide,
++  .categorySmall {
++    grid-column: span 1;
++    grid-row: span 1;
++  }
++
++  .featureArtwork {
++    min-height: 27rem;
++  }
++
++  .stepCard {
++    grid-template-columns: 2.75rem minmax(0, 1fr);
++  }
++
++  .stepCard > :last-child {
++    display: none;
++  }
++
++  .footerGrid {
++    grid-template-columns: 1fr;
++    gap: 2rem;
++  }
+ }
+diff --git a/components/public/home-page.tsx b/components/public/home-page.tsx
+index 2ce26f2..1b3c786 100644
+--- a/components/public/home-page.tsx
++++ b/components/public/home-page.tsx
+@@ -1,8 +1,9 @@
+ import Image from "next/image";
+ import Link from "next/link";
+ 
+-import { ProductCard } from "@/components/public/product-card";
+ import styles from "@/components/public/game-commerce.module.css";
++import { HorizontalRail } from "@/components/public/horizontal-rail";
++import { ProductCard } from "@/components/public/product-card";
+ import type { BannerContentData, FaqContentData, TestimonialContentData } from "@/features/content/content.types";
+ import type { PublicHomeData } from "@/features/public/public.service";
+ import type { Product, ProductType } from "@/features/products/product.types";
+@@ -15,14 +16,14 @@ const typeLabels: Record<ProductType, string> = {
+   phone_number: "Nomor Kosong",
+ };
+ 
+-const fallbackCategoryImages: Record<ProductType, string> = {
++const categoryFallbacks: Record<ProductType, string> = {
+   top_up: "/nexty-showcase/category-topup.png",
+   game_account: "/nexty-showcase/category-account.png",
+   subscription: "/nexty-showcase/category-subscription.png",
+   phone_number: "/nexty-showcase/category-number.png",
+ };
+ 
+-const railFallbacks = [
++const productFallbacks = [
+   "/nexty-showcase/cover-featured.png",
+   "/nexty-showcase/cover-assassin.png",
+   "/nexty-showcase/cover-crystal-queen.png",
+@@ -31,501 +32,189 @@ const railFallbacks = [
+   "/nexty-showcase/category-subscription.png",
+ ];
+ 
+-function formatRupiah(value: number) {
+-  return new Intl.NumberFormat("id-ID", {
+-    style: "currency",
+-    currency: "IDR",
+-    maximumFractionDigits: 0,
+-  }).format(value);
++function rupiah(value: number) {
++  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
+ }
+ 
+-function getBannerData(data: PublicHomeData): BannerContentData | null {
+-  if (!data.heroBanner) return null;
+-  return data.heroBanner.data as BannerContentData;
+-}
+-
+-function getFaqData(item: PublicHomeData["faqs"][number]): FaqContentData {
+-  return item.data as FaqContentData;
++function bannerData(item: PublicHomeData["banners"][number] | null): BannerContentData | null {
++  return item ? item.data as BannerContentData : null;
+ }
+ 
+-function getTestimonialData(item: PublicHomeData["testimonials"][number]): TestimonialContentData {
++function testimonialData(item: PublicHomeData["testimonials"][number]): TestimonialContentData {
+   return item.data as TestimonialContentData;
+ }
+ 
+-function getCategoryPreview(data: PublicHomeData, categoryId: string, type: ProductType) {
+-  const matchingProduct = data.products.find((product) => product.categoryId === categoryId && product.thumbnail?.secureUrl);
+-  return matchingProduct?.thumbnail?.secureUrl || fallbackCategoryImages[type];
++function faqData(item: PublicHomeData["faqs"][number]): FaqContentData {
++  return item.data as FaqContentData;
+ }
+ 
+-function getProductFallback(index: number) {
+-  return railFallbacks[index % railFallbacks.length];
++function categoryImage(data: PublicHomeData, categoryId: string, type: ProductType) {
++  return data.products.find((product) => product.categoryId === categoryId && product.thumbnail?.secureUrl)?.thumbnail?.secureUrl || categoryFallbacks[type];
+ }
+ 
+-function countProductsByCategory(products: Product[], categoryId: string) {
++function categoryCount(products: Product[], categoryId: string) {
+   return products.filter((product) => product.categoryId === categoryId).length;
+ }
+ 
+-function createHeroTitle(settingsTitle: string, bannerTitle?: string) {
+-  return bannerTitle || settingsTitle || "Semua Kebutuhan Digital Gaming Dalam Satu Tempat";
+-}
+-
+-function createPreviewProduct(products: Product[]) {
+-  return products.find((item) => item.isFeatured) || products[0] || null;
+-}
+-
+-function RatingStars({ rating }: { rating: number }) {
+-  return (
+-    <div className="flex gap-1 text-[#ffd451]" aria-label={`Rating ${rating} dari 5`}>
+-      {Array.from({ length: 5 }).map((_, index) => (
+-        <svg key={index} aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill={index < rating ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
+-          <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
+-        </svg>
+-      ))}
+-    </div>
+-  );
++function smartAction(href: string, label: string) {
++  const className = "inline-flex h-11 items-center justify-center rounded-lg bg-[#5f7cff] px-4 text-xs font-extrabold text-white transition hover:bg-[#7089ff]";
++  return /^https?:\/\//.test(href) ? <a href={href} target="_blank" rel="noreferrer" className={className}>{label}</a> : <Link href={href} className={className}>{label}</Link>;
+ }
+ 
+ export function HomePage({ data }: { data: PublicHomeData }) {
+-  const banner = getBannerData(data);
+-  const generalWhatsappUrl = createWhatsAppUrl(
+-    data.settings.whatsappNumber,
+-    data.settings.whatsappMessageTemplate || "Halo Admin, saya ingin bertanya mengenai produk yang tersedia.",
+-  );
+-
+-  const featuredProduct = createPreviewProduct(data.products);
+-  const heroImage = banner?.image?.secureUrl || "/nexty-showcase/hero-banner.png";
+-  const heroAlt = banner?.image?.alt || banner?.title || data.settings.businessName;
+-  const productsForRail = data.products.slice(0, 6);
++  const hero = bannerData(data.banners[0] ?? data.heroBanner);
++  const promo = bannerData(data.banners[1] ?? null);
++  const heroImage = hero?.image?.secureUrl || "/nexty-showcase/hero-banner.png";
++  const featured = data.products.find((product) => product.isFeatured) || data.products[0] || null;
++  const generalWhatsapp = createWhatsAppUrl(data.settings.whatsappNumber, "Halo Admin, saya ingin bertanya mengenai produk yang tersedia.");
+ 
+   return (
+-    <main className="bg-[#070b14] text-white">
+-      <section id="beranda" className="px-4 pb-8 pt-5 sm:px-6 lg:px-8 lg:pb-12">
+-        <div className={`mx-auto w-full max-w-[1440px] ${styles.shell}`}>
+-          <div className={`${styles.panel} ${styles.heroMask} ${styles.gridOverlay} ${styles.noise} ${styles.topGlow} overflow-hidden rounded-[34px]`}>
+-            <div className="relative grid min-h-[720px] lg:grid-cols-[1.02fr_1.18fr]">
+-              <div className="relative z-[2] flex flex-col justify-between px-6 py-7 sm:px-8 lg:px-10 lg:py-10 xl:px-12">
+-                <div>
+-                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#8ea7ff]">
+-                    <span className="rounded-full border border-[#3b6fff]/30 bg-[#3b6fff]/10 px-3 py-1">Top Up & Game Account</span>
+-                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">Manual Order</span>
+-                  </div>
+-
+-                  <h1 className={`${styles.heroTitle} mt-7 max-w-[680px] text-[2.8rem] font-black uppercase text-white sm:text-[4rem] lg:text-[4.8rem] xl:text-[5.4rem]`}>
+-                    {createHeroTitle(data.settings.businessTagline, banner?.title)}
+-                  </h1>
+-
+-                  <p className="mt-5 max-w-xl text-base leading-8 text-white/65 sm:text-lg">
+-                    {banner?.subtitle || data.settings.businessDescription || "Top up game, akun premium, subscription, dan nomor kosong terpercaya dengan proses cepat dan aman."}
+-                  </p>
+-
+-                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+-                    <Link href={banner?.ctaUrl || "/#produk"} className="inline-flex h-12 items-center justify-center rounded-xl bg-[#3b6fff] px-5 text-sm font-black uppercase tracking-[0.06em] text-white transition hover:bg-[#4c73ff]">
+-                      {banner?.ctaLabel || "Lihat Produk"}
+-                    </Link>
+-                    {generalWhatsappUrl ? (
+-                      <a
+-                        href={generalWhatsappUrl}
+-                        target="_blank"
+-                        rel="noreferrer"
+-                        className="inline-flex h-12 items-center justify-center rounded-xl border border-white/12 bg-white/[0.04] px-5 text-sm font-bold uppercase tracking-[0.06em] text-white/90 transition hover:bg-white/[0.08]"
+-                      >
+-                        Cara Pesan
+-                      </a>
+-                    ) : null}
+-                  </div>
+-                </div>
+-
+-                <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+-                  {[
+-                    { value: `${data.categories.length.toString().padStart(2, "0")}`, label: "Kategori Aktif" },
+-                    { value: `${Math.max(data.products.length, 1).toString().padStart(2, "0")}`, label: "Produk Pilihan" },
+-                    { value: "1:1", label: "Bantu oleh admin" },
+-                    { value: "24/7", label: "Tanya ketersediaan" },
+-                  ].map((item) => (
+-                    <div key={item.label} className={`${styles.glass} rounded-2xl px-4 py-4`}>
+-                      <p className="text-2xl font-black text-white">{item.value}</p>
+-                      <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-white/45">{item.label}</p>
+-                    </div>
+-                  ))}
++    <main className={styles.page}>
++      <section id="beranda" className={`${styles.sectionCompact} pt-4 sm:pt-6`}>
++        <div className={styles.container}>
++          <div className={styles.hero}>
++            <Image src={heroImage} alt={hero?.image?.alt || hero?.title || data.settings.businessName} fill priority sizes="100vw" className="object-cover object-center" />
++            <div className={styles.heroContent}>
++              <div className="max-w-2xl">
++                <p className={styles.eyebrow}>Digital game marketplace</p>
++                <h1 className={`${styles.heroTitle} mt-5`}>{hero?.title || data.settings.businessTagline || "Kebutuhan digital untuk permainanmu."}</h1>
++                <p className="mt-5 max-w-xl text-sm leading-7 text-white/62 sm:text-base">{hero?.subtitle || data.settings.businessDescription}</p>
++                <div className="mt-7 flex flex-wrap gap-3">
++                  {smartAction(hero?.ctaUrl || "/#produk", hero?.ctaLabel || "Jelajahi Produk")}
++                  {generalWhatsapp ? <a href={generalWhatsapp} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center justify-center rounded-lg border border-white/14 bg-black/20 px-4 text-xs font-extrabold text-white backdrop-blur transition hover:bg-white/[0.08]">Tanya Admin</a> : null}
+                 </div>
+               </div>
+ 
+-              <div className="relative min-h-[460px] lg:min-h-full">
+-                <Image src={heroImage} alt={heroAlt} fill priority sizes="(max-width: 1024px) 100vw, 58vw" className="object-cover object-center" />
+-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,11,20,0.94)_0%,rgba(7,11,20,0.58)_24%,rgba(7,11,20,0.18)_44%,rgba(7,11,20,0.56)_100%)] lg:bg-[linear-gradient(90deg,rgba(7,11,20,0)_0%,rgba(7,11,20,0)_24%,rgba(7,11,20,0.24)_62%,rgba(7,11,20,0.74)_100%)]" />
+-                <div className="absolute bottom-5 left-5 right-5 z-[2] lg:bottom-8 lg:left-auto lg:right-8 lg:w-[360px]">
+-                  <div className={`${styles.glass} rounded-[26px] p-4 sm:p-5`}>
+-                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#8ea7ff]">Featured</p>
+-                    {featuredProduct ? (
+-                      <div className="mt-3 grid grid-cols-[1fr_84px] gap-4">
+-                        <div>
+-                          <h3 className="text-2xl font-black leading-tight text-white">{featuredProduct.name}</h3>
+-                          <p className="mt-2 text-sm leading-6 text-white/55">Mulai dari</p>
+-                          <p className="mt-1 text-3xl font-black text-white">{formatRupiah(featuredProduct.discountPrice ?? featuredProduct.price)}</p>
+-                        </div>
+-                        <div className={`relative overflow-hidden rounded-2xl ${styles.thumbMask}`}>
+-                          <Image
+-                            src={featuredProduct.thumbnail?.secureUrl || "/nexty-showcase/cover-featured.png"}
+-                            alt={featuredProduct.thumbnail?.alt || featuredProduct.name}
+-                            fill
+-                            sizes="84px"
+-                            className="object-cover"
+-                          />
+-                        </div>
+-                      </div>
+-                    ) : (
+-                      <p className="mt-3 text-sm text-white/60">Produk unggulan akan tampil di sini setelah diisi melalui admin.</p>
+-                    )}
+-                  </div>
+-                </div>
++              <div className={styles.heroRail}>
++                {[
++                  [String(data.categories.length).padStart(2, "0"), "Kategori"],
++                  [String(data.products.length).padStart(2, "0"), "Produk Pilihan"],
++                  ["1:1", "Bantuan Admin"],
++                  ["Manual", "Transaksi"],
++                ].map(([value, label]) => (
++                  <div key={label} className={styles.heroMetric}><p className="text-xl font-extrabold text-white">{value}</p><p className="mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-white/38">{label}</p></div>
++                ))}
+               </div>
+             </div>
+-
+-            <div className="grid gap-px border-t border-white/8 bg-white/8 sm:grid-cols-2 xl:grid-cols-5">
+-              {[
+-                { title: "Trusted by", description: "10K+ gamers" },
+-                { title: "Proses cepat", description: "2-10 menit" },
+-                { title: "Aman & terpercaya", description: "100% garansi" },
+-                { title: "Support", description: "Admin siap bantu" },
+-                { title: "Pembayaran aman", description: "QRIS, transfer, e-wallet" },
+-              ].map((item) => (
+-                <div key={item.title} className="bg-[#080d17] px-5 py-4">
+-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#8ea7ff]">{item.title}</p>
+-                  <p className="mt-1 text-sm font-semibold text-white/78">{item.description}</p>
+-                </div>
+-              ))}
+-            </div>
+           </div>
+         </div>
+       </section>
+ 
+-      <section id="kategori" className="px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
+-        <div className="mx-auto grid w-full max-w-[1440px] gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+-          <div className={`${styles.panel} ${styles.cut} rounded-[30px] p-5 sm:p-6`}>
+-            <div className="mb-5 flex items-center justify-between gap-3">
+-              <div>
+-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">Pilih kategori</p>
+-                <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl">Pilih arena digitalmu.</h2>
+-              </div>
+-            </div>
++      <section id="kategori" className={styles.section}>
++        <div className={styles.container}>
++          <div className={styles.sectionHeading}>
++            <div><p className={styles.eyebrow}>Browse collection</p><h2 className={`${styles.sectionTitle} mt-3`}>Masuk lewat kategori yang tepat.</h2></div>
++            <p className="max-w-md text-sm leading-7 text-white/48">Bento grid ini mengambil kategori aktif dan thumbnail produk dari dashboard. Saat admin mengganti data, visual ikut berubah otomatis.</p>
++          </div>
+ 
+-            <div className="grid gap-3 sm:grid-cols-2">
+-              {data.categories.slice(0, 4).map((category, index) => {
+-                const preview = getCategoryPreview(data, category.id, category.type);
+-                const count = countProductsByCategory(data.products, category.id);
+-                const isLarge = index === 0;
+-                return (
+-                  <a
+-                    key={category.id}
+-                    href="#produk"
+-                    className={`${styles.tileHover} ${styles.panel} ${styles.thumbMask} relative overflow-hidden rounded-[24px] ${isLarge ? "sm:col-span-2 sm:min-h-[280px]" : "min-h-[220px]"}`}
+-                  >
+-                    <Image src={preview} alt={category.name} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-cover" />
+-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,16,0.14)_0%,rgba(5,8,16,0.28)_30%,rgba(5,8,16,0.84)_100%)]" />
+-                    <div className="absolute inset-0 p-4 sm:p-5">
+-                      <div className="flex items-start justify-between gap-3">
+-                        <span className="rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white/85">
+-                          {String(index + 1).padStart(2, "0")}
+-                        </span>
+-                        <span className="rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#8ea7ff]">
+-                          {count} produk
+-                        </span>
+-                      </div>
+-                      <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5">
+-                        <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#8ea7ff]">{typeLabels[category.type]}</p>
+-                        <h3 className="mt-2 text-2xl font-black leading-tight text-white sm:text-[1.8rem]">{category.name}</h3>
+-                        <p className="mt-2 max-w-md text-sm leading-6 text-white/60">{category.description || "Klik untuk melihat produk di kategori ini."}</p>
+-                      </div>
+-                    </div>
+-                  </a>
+-                );
+-              })}
+-            </div>
++          <div className={styles.bentoGrid}>
++            {data.categories.slice(0, 4).map((category, index) => {
++              const sizing = index === 0 ? styles.categoryLarge : index === 1 || index === 2 ? styles.categoryWide : styles.categorySmall;
++              return (
++                <a key={category.id} href="#produk" className={`${styles.bentoCard} ${sizing}`}>
++                  <Image src={categoryImage(data, category.id, category.type)} alt={category.name} fill sizes="(max-width:1024px) 50vw, 45vw" className={styles.bentoImage} />
++                  <div className={styles.bentoOverlay} />
++                  <div className="absolute inset-x-0 bottom-0 z-[1] p-5 sm:p-6">
++                    <div className="flex items-center justify-between gap-3"><p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#aebcff]">{typeLabels[category.type]}</p><span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/44">{categoryCount(data.products, category.id)} produk</span></div>
++                    <h3 className="mt-2 text-2xl font-bold text-white sm:text-3xl">{category.name}</h3>
++                    {index !== 3 ? <p className="mt-2 max-w-lg text-xs leading-6 text-white/55 sm:text-sm">{category.description || "Temukan pilihan produk yang tersedia pada kategori ini."}</p> : null}
++                  </div>
++                </a>
++              );
++            })}
++          </div>
++        </div>
++      </section>
+ 
+-            <a href="#produk" className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] px-5 text-sm font-black uppercase tracking-[0.08em] text-white/86 transition hover:bg-white/[0.07]">
+-              Lihat semua kategori
+-            </a>
++      <section id="produk" className={styles.sectionCompact}>
++        <div className={styles.container}>
++          <div className={styles.sectionHeading}>
++            <div><p className={styles.eyebrow}>Curated storefront</p><h2 className={`${styles.sectionTitle} mt-3`}>Pilihan utama, tanpa kartu yang terasa kosong.</h2></div>
++            <p className="max-w-md text-sm leading-7 text-white/48">Produk unggulan mendapat ruang besar. Produk lain tetap ringkas dan mudah dipindai.</p>
+           </div>
+ 
+-          <div className="grid gap-4">
+-            <div className={`${styles.panel} ${styles.cut} rounded-[30px] p-5 sm:p-6`}>
+-              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">
+-                <span>Produk pilihan</span>
+-              </div>
+-              {featuredProduct ? (
+-                <div className="mt-4 grid gap-4">
+-                  <div className={`relative min-h-[330px] overflow-hidden rounded-[26px] ${styles.thumbMask}`}>
+-                    <Image
+-                      src={featuredProduct.thumbnail?.secureUrl || "/nexty-showcase/cover-featured.png"}
+-                      alt={featuredProduct.thumbnail?.alt || featuredProduct.name}
+-                      fill
+-                      sizes="(max-width: 1024px) 100vw, 38vw"
+-                      className="object-cover"
+-                    />
+-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,18,0.1),rgba(8,10,18,0.82)_82%)]" />
+-                    <div className="absolute inset-x-5 bottom-5">
+-                      <h3 className="max-w-[70%] text-3xl font-black leading-tight text-white">{featuredProduct.name}</h3>
+-                      <div className="mt-3 flex items-center justify-between gap-4">
+-                        <div>
+-                          <p className="text-sm text-white/45">Mulai dari</p>
+-                          <p className="text-3xl font-black text-white">{formatRupiah(featuredProduct.discountPrice ?? featuredProduct.price)}</p>
+-                        </div>
+-                        {generalWhatsappUrl ? (
+-                          <a
+-                            href={createWhatsAppUrl(
+-                              data.settings.whatsappNumber,
+-                              featuredProduct.whatsappMessage || data.settings.whatsappMessageTemplate,
+-                              {
+-                                name: featuredProduct.name,
+-                                code: featuredProduct.code,
+-                                price: featuredProduct.discountPrice ?? featuredProduct.price,
+-                              },
+-                            ) || generalWhatsappUrl}
+-                            target="_blank"
+-                            rel="noreferrer"
+-                            className="inline-flex h-11 items-center justify-center rounded-xl bg-[#3b6fff] px-4 text-sm font-black text-white"
+-                          >
+-                            Pesan Sekarang
+-                          </a>
+-                        ) : null}
+-                      </div>
+-                    </div>
++          {featured ? (
++            <div className={styles.featureLayout}>
++              <article className={`${styles.surface} p-3 sm:p-4`}>
++                <div className={styles.featureArtwork}>
++                  <Image src={featured.thumbnail?.secureUrl || "/nexty-showcase/cover-featured.png"} alt={featured.thumbnail?.alt || featured.name} fill sizes="(max-width:1024px) 100vw, 58vw" className="object-cover" />
++                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b1018] via-[#0b1018]/18 to-transparent" />
++                  <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
++                    <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#aebcff]">Featured product · {featured.code}</p>
++                    <h3 className="mt-2 max-w-xl text-3xl font-bold leading-none text-white sm:text-5xl">{featured.name}</h3>
++                    <p className="mt-3 max-w-xl text-sm leading-7 text-white/58">{featured.shortDescription}</p>
++                    <div className="mt-5 flex flex-wrap items-center gap-4"><p className="text-2xl font-extrabold text-white">{rupiah(featured.discountPrice ?? featured.price)}</p>{generalWhatsapp ? <a href={createWhatsAppUrl(data.settings.whatsappNumber, featured.whatsappMessage || data.settings.whatsappMessageTemplate, { name: featured.name, code: featured.code, price: featured.discountPrice ?? featured.price }) || generalWhatsapp} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center justify-center rounded-lg bg-[#5f7cff] px-4 text-xs font-extrabold text-white">Pesan Produk</a> : null}</div>
+                   </div>
+                 </div>
+-              ) : (
+-                <p className="mt-4 text-sm text-white/60">Produk unggulan akan tampil otomatis dari data admin.</p>
+-              )}
+-            </div>
+-
+-            <div className="grid gap-4 sm:grid-cols-[1fr_0.88fr]">
+-              <div className={`${styles.panel} ${styles.cut} rounded-[28px] p-5`}>
+-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">Kenapa pilih kami?</p>
+-                <div className="mt-4 space-y-4">
+-                  {[
+-                    ["Harga terbaik", "Harga bersaing dan transparan"],
+-                    ["Proses cepat", "Dibantu admin dengan alur jelas"],
+-                    ["Aman & terpercaya", "Detail pesanan dikonfirmasi sebelum proses"],
+-                    ["Support 24/7", "Siap menjawab saat kamu butuh bantuan"],
+-                  ].map(([title, description]) => (
+-                    <div key={title} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+-                      <p className="font-black text-white">{title}</p>
+-                      <p className="mt-1 text-sm leading-6 text-white/55">{description}</p>
+-                    </div>
++              </article>
++
++              <aside className={`${styles.surface} flex flex-col p-5 sm:p-6`}>
++                <p className={styles.eyebrow}>Store signals</p>
++                <h3 className="mt-3 text-3xl font-bold leading-none text-white">Kenapa alurnya terasa lebih aman?</h3>
++                <div className="mt-6 grid gap-3">
++                  {[["01", "Konteks produk terbawa", "Pesan WhatsApp otomatis membawa nama, kode, dan harga produk."], ["02", "Konfirmasi manusia", "Admin memeriksa kebutuhan sebelum transaksi dilanjutkan."], ["03", "Konten selalu dinamis", "Harga, stok, banner, dan thumbnail berasal dari dashboard."], ["04", "Tidak memaksa checkout", "Cocok untuk penjualan manual dan produk yang perlu verifikasi."]].map(([number, title, desc]) => (
++                    <div key={number} className={`${styles.surfaceSoft} p-4`}><div className="flex gap-3"><span className="text-[10px] font-extrabold text-[#9db0ff]">{number}</span><div><p className="text-sm font-extrabold text-white">{title}</p><p className="mt-1 text-xs leading-6 text-white/46">{desc}</p></div></div></div>
+                   ))}
+                 </div>
+-              </div>
+-
+-              <div className={`${styles.panel} ${styles.cut} relative overflow-hidden rounded-[28px]`}>
+-                <Image src="/nexty-showcase/promo-banner.png" alt="Promo spesial" fill sizes="(max-width: 1024px) 100vw, 28vw" className="object-cover" />
+-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,11,20,0.12),rgba(8,11,20,0.86)_100%)]" />
+-                <div className="absolute inset-x-5 bottom-5">
+-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">Promo spesial</p>
+-                  <p className="mt-2 text-5xl font-black tracking-[-0.05em] text-white">20% OFF</p>
+-                  <p className="mt-2 text-sm leading-6 text-white/60">Gunakan area ini untuk banner promo dinamis dari admin atau penawaran pilihan.</p>
+-                  <a href="#produk" className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-[#3b6fff] px-4 text-sm font-black text-white">
+-                    Lihat Promo
+-                  </a>
+-                </div>
+-              </div>
++              </aside>
+             </div>
++          ) : null}
++
++          <div className="mt-8">
++            <HorizontalRail ariaLabel="Produk populer">
++              {data.products.map((product, index) => {
++                const category = data.categories.find((item) => item.id === product.categoryId);
++                const price = product.discountPrice ?? product.price;
++                return <ProductCard key={product.id} product={product} categoryName={category?.name || typeLabels[product.type]} fallbackImage={productFallbacks[index % productFallbacks.length]} whatsappUrl={createWhatsAppUrl(data.settings.whatsappNumber, product.whatsappMessage || data.settings.whatsappMessageTemplate, { name: product.name, code: product.code, price })} />;
++              })}
++            </HorizontalRail>
+           </div>
+         </div>
+       </section>
+ 
+-      <section id="produk" className="px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
+-        <div className={`${styles.panel} ${styles.cut} mx-auto w-full max-w-[1440px] rounded-[30px] p-5 sm:p-6`}>
+-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+-            <div>
+-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">Produk populer</p>
+-              <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl">Ready for your next play.</h2>
+-            </div>
+-            <a href="#kontak" className="inline-flex h-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-4 text-sm font-black uppercase tracking-[0.06em] text-white/85">
+-              Tanya ketersediaan
+-            </a>
++      <section className={styles.sectionCompact}>
++        <div className={styles.container}>
++          <div className={`${styles.surface} relative min-h-[25rem] overflow-hidden p-6 sm:p-10`}>
++            <Image src={promo?.image?.secureUrl || "/nexty-showcase/promo-banner.png"} alt={promo?.image?.alt || promo?.title || "Promo digital"} fill sizes="100vw" className="object-cover object-center opacity-70" />
++            <div className="absolute inset-0 bg-gradient-to-r from-[#0b1018] via-[#0b1018]/78 to-[#0b1018]/20" />
++            <div className="relative z-[1] max-w-xl"><p className={styles.eyebrow}>Featured campaign</p><h2 className="mt-4 text-4xl font-bold leading-[0.95] text-white sm:text-6xl">{promo?.title || "Ruang promo yang benar-benar memakai artwork."}</h2><p className="mt-5 text-sm leading-7 text-white/58 sm:text-base">{promo?.subtitle || "Banner kedua dari admin dapat tampil di sini. Bila belum ada, fallback artwork tetap menjaga halaman tidak terlihat kosong."}</p><div className="mt-6">{smartAction(promo?.ctaUrl || "/#produk", promo?.ctaLabel || "Lihat Produk")}</div></div>
+           </div>
+-
+-          {productsForRail.length > 0 ? (
+-            <div className={`${styles.productRail} mt-6 flex gap-4 overflow-x-auto pb-2 [scroll-snap-type:x_mandatory]`}>
+-              {productsForRail.map((product, index) => {
+-                const categoryName = data.categories.find((item) => item.id === product.categoryId)?.name || typeLabels[product.type];
+-                const finalPrice = product.discountPrice ?? product.price;
+-                const whatsappUrl = createWhatsAppUrl(
+-                  data.settings.whatsappNumber,
+-                  product.whatsappMessage || data.settings.whatsappMessageTemplate,
+-                  { name: product.name, code: product.code, price: finalPrice },
+-                );
+-                return (
+-                  <ProductCard
+-                    key={product.id}
+-                    product={product}
+-                    categoryName={categoryName}
+-                    whatsappUrl={whatsappUrl}
+-                    fallbackImage={getProductFallback(index)}
+-                  />
+-                );
+-              })}
+-            </div>
+-          ) : (
+-            <div className="mt-6 rounded-[24px] border border-dashed border-white/12 bg-white/[0.03] px-6 py-14 text-center text-white/60">
+-              Belum ada produk yang dipublikasikan. Setelah admin mengisi data, kartu produk akan tampil otomatis di section ini.
+-            </div>
+-          )}
+-        </div>
+-      </section>
+-
+-      <section className="px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
+-        <div className={`${styles.panel} ${styles.cut} mx-auto grid w-full max-w-[1440px] gap-px overflow-hidden rounded-[30px] border border-white/8 bg-white/8 lg:grid-cols-4`}>
+-          {[
+-            ["100% legal", "Produk resmi & aman"],
+-            ["Proses terarah", "Top up instan atau manual"],
+-            ["Pembayaran aman", "QRIS, transfer, e-wallet"],
+-            ["Garansi", "Dibantu jika terjadi kendala"],
+-          ].map(([title, desc]) => (
+-            <div key={title} className="bg-[#080d17] px-5 py-5">
+-              <p className="text-sm font-black uppercase tracking-[0.06em] text-white">{title}</p>
+-              <p className="mt-1 text-sm text-white/58">{desc}</p>
+-            </div>
+-          ))}
+         </div>
+       </section>
+ 
+-      <section id="cara-pesan" className="bg-[#eef2f8] px-4 py-8 text-[#0c1424] sm:px-6 lg:px-8">
+-        <div className="mx-auto grid w-full max-w-[1440px] gap-4 lg:grid-cols-[0.86fr_1.14fr]">
+-          <div className={`${styles.panelLight} ${styles.cut} rounded-[30px] p-6 sm:p-8`}>
+-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#3b6fff]">Quick protocol</p>
+-            <h2 className="mt-3 max-w-lg text-[2.35rem] font-black leading-[0.96] tracking-[-0.05em] text-[#0c1424] sm:text-[3.2rem]">
+-              Simple flow. Human support.
+-            </h2>
+-            <p className="mt-5 max-w-md text-base leading-8 text-[#25314a]/72">
+-              Tidak ada transaksi yang membingungkan. Pilih produk, kirim detail via WhatsApp, lalu admin membantu proses berikutnya.
+-            </p>
+-          </div>
+-
+-          <div className="grid gap-4">
+-            {[
+-              ["01", "Pilih produk", "Jelajahi katalog dan temukan produk yang sesuai kebutuhanmu."],
+-              ["02", "Periksa detail", "Baca informasi harga, ketersediaan, dan catatan produk."],
+-              ["03", "Kirim ke admin", "Tombol pemesanan otomatis membawa konteks produk ke WhatsApp."],
+-              ["04", "Konfirmasi proses", "Admin memproses pesanan dan memastikan detailnya sesuai."],
+-            ].map(([number, title, description]) => (
+-              <div key={number} className={`${styles.panelLight} ${styles.cut} rounded-[26px] p-5 sm:p-6`}>
+-                <div className="grid gap-3 sm:grid-cols-[84px_1fr_36px] sm:items-center">
+-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-[#3b6fff]">{number}</p>
+-                  <div>
+-                    <p className="text-2xl font-black text-[#0c1424]">{title}</p>
+-                    <p className="mt-2 text-sm leading-7 text-[#25314a]/70">{description}</p>
+-                  </div>
+-                  <span className="inline-flex size-9 items-center justify-center rounded-full border border-[#0c1424]/10 text-[#3b6fff]">→</span>
+-                </div>
+-              </div>
+-            ))}
++      <section id="cara-pesan" className="bg-[#f3f6fb] py-16 text-[#111827] sm:py-24">
++        <div className={styles.container}>
++          <div className={styles.orderGrid}>
++            <div className={`${styles.lightSurface} p-6 sm:p-9`}><p className="text-[10px] font-extrabold uppercase tracking-[0.17em] text-[#536ef0]">Order flow</p><h2 className="mt-3 max-w-md text-4xl font-bold leading-[0.95] sm:text-6xl">Alur singkat. Bantuan tetap manusia.</h2><p className="mt-5 max-w-md text-sm leading-7 text-slate-600">Website berperan sebagai katalog profesional. Proses transaksi tetap dikonfirmasi admin agar setiap detail tidak salah.</p></div>
++            <div className={styles.stepList}>{[["01", "Pilih produk", "Temukan kebutuhan berdasarkan kategori dan artwork."], ["02", "Periksa detail", "Baca harga, status stok, serta deskripsi singkat."], ["03", "Kirim ke admin", "Klik tombol pesan dan konteks produk ikut terkirim."], ["04", "Konfirmasi proses", "Admin mengarahkan pembayaran dan pengerjaan."]].map(([number, title, desc]) => <div key={number} className={styles.stepCard}><span className="text-[10px] font-extrabold text-[#536ef0]">{number}</span><div><p className="font-extrabold">{title}</p><p className="mt-1 text-xs leading-6 text-slate-500">{desc}</p></div><span className="text-[#536ef0]">→</span></div>)}</div>
+           </div>
+         </div>
+       </section>
+ 
+-      <section className="px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
+-        <div className="mx-auto grid w-full max-w-[1440px] gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+-          <div className={`${styles.panel} ${styles.cut} rounded-[30px] p-5 sm:p-6`}>
+-            <div className="flex items-center justify-between gap-3">
+-              <div>
+-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">Testimoni</p>
+-                <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl">Real feedback. No scripted hype.</h2>
+-              </div>
+-            </div>
+-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+-              {(data.testimonials.length > 0 ? data.testimonials.slice(0, 2) : [null, null]).map((testimonial, index) => {
+-                if (!testimonial) {
+-                  return (
+-                    <div key={`empty-${index}`} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+-                      <RatingStars rating={5} />
+-                      <p className="mt-4 text-base leading-8 text-white/70">“Tampilan testimoni akan muncul otomatis setelah admin menambahkan data pelanggan.”</p>
+-                      <p className="mt-6 text-sm font-black text-white">Calon pelanggan</p>
+-                      <p className="text-xs uppercase tracking-[0.12em] text-white/35">Placeholder</p>
+-                    </div>
+-                  );
+-                }
+-
+-                const item = getTestimonialData(testimonial);
+-                return (
+-                  <div key={testimonial.id} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+-                    <RatingStars rating={item.rating} />
+-                    <p className="mt-4 text-base leading-8 text-white/70">“{item.quote}”</p>
+-                    <div className="mt-6 flex items-center gap-3">
+-                      <div className="flex size-11 items-center justify-center rounded-full bg-[#0f1730] text-sm font-black text-white">
+-                        {(item.customerName || "P").slice(0, 1).toUpperCase()}
+-                      </div>
+-                      <div>
+-                        <p className="font-black text-white">{item.customerName}</p>
+-                        <p className="text-xs uppercase tracking-[0.12em] text-white/35">{item.customerRole || "Pelanggan"}</p>
+-                      </div>
+-                    </div>
+-                  </div>
+-                );
+-              })}
+-            </div>
+-          </div>
+-
+-          <div id="faq" className={`${styles.panel} ${styles.cut} rounded-[30px] p-5 sm:p-6`}>
+-            <div className="flex items-center justify-between gap-3">
+-              <div>
+-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">FAQ</p>
+-                <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl">Need intel?</h2>
++      <section className={styles.section}>
++        <div className={styles.container}>
++          <div className={styles.reviewFaqGrid}>
++            <div className={`${styles.surface} p-5 sm:p-7`}>
++              <p className={styles.eyebrow}>Customer voice</p><h2 className="mt-3 text-4xl font-bold leading-none text-white">Bukti sosial yang tenang, bukan berisik.</h2>
++              <div className="mt-6 grid gap-3">
++                {data.testimonials.slice(0, 2).map((item) => { const content = testimonialData(item); return <article key={item.id} className={`${styles.surfaceSoft} p-5`}><div className="text-sm tracking-[0.18em] text-[#9db0ff]">★★★★★</div><p className="mt-3 text-sm leading-7 text-white/64">“{content.quote}”</p><p className="mt-4 text-sm font-extrabold text-white">{content.customerName}</p><p className="text-[10px] uppercase tracking-[0.14em] text-white/34">{content.customerRole || "Pelanggan"}</p></article>; })}
++                {data.testimonials.length === 0 ? <div className={`${styles.surfaceSoft} p-5 text-sm leading-7 text-white/50`}>Testimoni yang dipublikasikan dari admin akan tampil di area ini.</div> : null}
+               </div>
+             </div>
+-            <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_220px]">
+-              <div className="space-y-3">
+-                {(data.faqs.length > 0
+-                  ? data.faqs.slice(0, 4).map((faq) => getFaqData(faq))
+-                  : [
+-                      { question: "Bagaimana cara melakukan pemesanan?", answer: "Pilih produk lalu klik tombol pesan untuk diarahkan ke admin via WhatsApp." },
+-                      { question: "Apakah pembayaran dilakukan melalui website?", answer: "Tidak. Konfirmasi pembayaran dibantu langsung oleh admin." },
+-                      { question: "Berapa lama proses pemesanan?", answer: "Tergantung jenis produk dan ketersediaannya. Admin akan memberi estimasi proses." },
+-                      { question: "Apakah produk aman dan legal?", answer: "Setiap produk dapat dijelaskan lebih dulu oleh admin sebelum transaksi dilakukan." },
+-                    ]).map((faq, index) => (
+-                  <details key={`${faq.question}-${index}`} className="rounded-[20px] border border-white/10 bg-white/[0.03] px-4 py-4" open={index === 0}>
+-                    <summary className="cursor-pointer list-none text-sm font-black text-white">{faq.question}</summary>
+-                    <p className="pt-3 text-sm leading-7 text-white/58">{faq.answer}</p>
+-                  </details>
+-                ))}
+-              </div>
+ 
+-              <div className={`relative hidden overflow-hidden rounded-[24px] border border-white/10 bg-[#0d1323] lg:block ${styles.thumbMask}`}>
+-                <Image src="/nexty-showcase/faq-core.png" alt="FAQ illustration" fill sizes="220px" className="object-cover" />
+-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,11,20,0.08),rgba(8,11,20,0.55)_100%)]" />
++            <div id="faq" className={`${styles.surface} p-5 sm:p-7`}>
++              <p className={styles.eyebrow}>Quick answers</p><h2 className="mt-3 text-4xl font-bold leading-none text-white">Pertanyaan sebelum order.</h2>
++              <div className="mt-6 space-y-2">
++                {data.faqs.slice(0, 5).map((item, index) => { const content = faqData(item); return <details key={item.id} open={index === 0} className={`${styles.surfaceSoft} px-4 py-4`}><summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-extrabold text-white"><span>{content.question}</span><span className="text-[#9db0ff]">+</span></summary><p className="pt-3 text-xs leading-6 text-white/50">{content.answer}</p></details>; })}
++                {data.faqs.length === 0 ? <div className={`${styles.surfaceSoft} p-5 text-sm leading-7 text-white/50`}>FAQ yang dipublikasikan dari admin akan tampil di area ini.</div> : null}
+               </div>
+             </div>
+           </div>
+         </div>
+       </section>
+ 
+-      <section className="px-4 pb-8 pt-5 sm:px-6 lg:px-8 lg:pb-12 lg:pt-6">
+-        <div className={`${styles.panel} ${styles.cut} mx-auto overflow-hidden rounded-[30px]`}>
+-          <div className="mx-auto grid min-h-[290px] w-full max-w-[1440px] items-center gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[1fr_auto] lg:px-12">
+-            <div>
+-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">Final engagement</p>
+-              <h2 className="mt-3 max-w-3xl text-[2.4rem] font-black leading-[0.95] tracking-[-0.05em] text-white sm:text-[3.4rem]">
+-                Sudah menemukan produk yang tepat?
+-              </h2>
+-              <p className="mt-4 max-w-2xl text-base leading-8 text-white/60">
+-                Kirim detail produk ke admin untuk mengecek ketersediaan dan melanjutkan proses transaksi.
+-              </p>
+-            </div>
+-            {generalWhatsappUrl ? (
+-              <a
+-                href={generalWhatsappUrl}
+-                target="_blank"
+-                rel="noreferrer"
+-                className="inline-flex h-12 items-center justify-center rounded-xl bg-[#3b6fff] px-5 text-sm font-black uppercase tracking-[0.06em] text-white"
+-              >
+-                Lihat kontak
+-              </a>
+-            ) : (
+-              <a href="#kontak" className="inline-flex h-12 items-center justify-center rounded-xl bg-[#3b6fff] px-5 text-sm font-black uppercase tracking-[0.06em] text-white">
+-                Lihat kontak
+-              </a>
+-            )}
+-          </div>
+-        </div>
++      <section className={`${styles.sectionCompact} pt-0`}>
++        <div className={styles.container}><div className={`${styles.surface} flex flex-col items-start justify-between gap-6 p-6 sm:p-9 lg:flex-row lg:items-center`}><div><p className={styles.eyebrow}>Ready when you are</p><h2 className="mt-3 max-w-2xl text-4xl font-bold leading-none text-white sm:text-5xl">Produk ditemukan. Tinggal konfirmasi ke admin.</h2></div>{generalWhatsapp ? <a href={generalWhatsapp} target="_blank" rel="noreferrer" className="inline-flex h-12 shrink-0 items-center justify-center rounded-lg bg-[#5f7cff] px-5 text-xs font-extrabold text-white">Buka WhatsApp</a> : <a href="#kontak" className="inline-flex h-12 shrink-0 items-center justify-center rounded-lg bg-[#5f7cff] px-5 text-xs font-extrabold text-white">Lihat Kontak</a>}</div></div>
+       </section>
+     </main>
+   );
+diff --git a/components/public/information-page-view.tsx b/components/public/information-page-view.tsx
+index bdf40f0..ab4ee94 100644
+--- a/components/public/information-page-view.tsx
++++ b/components/public/information-page-view.tsx
+@@ -4,266 +4,45 @@ import Link from "next/link";
+ import styles from "@/components/public/game-commerce.module.css";
+ import type { ContentPage } from "@/features/content/content.types";
+ 
+-type InformationPageViewProps = {
+-  page: ContentPage;
+-  eyebrow: string;
+-};
+-
+-type ContentBlock =
+-  | {
+-      type: "paragraph";
+-      content: string;
+-    }
+-  | {
+-      type: "list";
+-      items: string[];
+-    };
+-
+-function parseContent(content: string): ContentBlock[] {
+-  const lines = content
+-    .split("\n")
+-    .map((line) => line.trim());
+-
+-  const blocks: ContentBlock[] = [];
+-  let listItems: string[] = [];
+-
+-  function pushList() {
+-    if (listItems.length === 0) {
+-      return;
+-    }
+-
+-    blocks.push({
+-      type: "list",
+-      items: listItems,
+-    });
+-
+-    listItems = [];
+-  }
+-
+-  for (const line of lines) {
+-    if (!line) {
+-      pushList();
+-      continue;
+-    }
+-
+-    const orderedMatch = line.match(/^\d+[.)]\s+(.+)$/);
+-    const bulletMatch = line.match(/^[-•]\s+(.+)$/);
+-
+-    if (orderedMatch) {
+-      listItems.push(orderedMatch[1]);
+-      continue;
+-    }
+-
+-    if (bulletMatch) {
+-      listItems.push(bulletMatch[1]);
+-      continue;
+-    }
+-
+-    pushList();
+-
+-    blocks.push({
+-      type: "paragraph",
+-      content: line,
+-    });
++type Block = { type: "paragraph"; content: string } | { type: "list"; items: string[] };
++
++function blocks(content: string): Block[] {
++  const result: Block[] = [];
++  let list: string[] = [];
++  const flush = () => { if (list.length) result.push({ type: "list", items: list }); list = []; };
++  for (const raw of content.split("\n")) {
++    const line = raw.trim();
++    if (!line) { flush(); continue; }
++    const match = line.match(/^(?:\d+[.)]|[-•])\s+(.+)$/);
++    if (match) { list.push(match[1]); continue; }
++    flush();
++    result.push({ type: "paragraph", content: line });
+   }
+-
+-  pushList();
+-
+-  return blocks;
++  flush();
++  return result;
+ }
+ 
+-function formatUpdatedAt(value: string | null): string {
+-  if (!value) {
+-    return "Belum diperbarui";
+-  }
+-
++function updated(value: string | null) {
++  if (!value) return "Belum diperbarui";
+   const date = new Date(value);
+-
+-  if (Number.isNaN(date.getTime())) {
+-    return "Tanggal tidak tersedia";
+-  }
+-
+-  return new Intl.DateTimeFormat("id-ID", {
+-    day: "2-digit",
+-    month: "long",
+-    year: "numeric",
+-  }).format(date);
++  if (Number.isNaN(date.getTime())) return "Tanggal tidak tersedia";
++  return new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "long", year: "numeric" }).format(date);
+ }
+ 
+-export function InformationPageView({
+-  page,
+-  eyebrow,
+-}: InformationPageViewProps) {
+-  const contentBlocks = parseContent(page.content);
+-
++export function InformationPageView({ page, eyebrow }: { page: ContentPage; eyebrow: string }) {
++  const content = blocks(page.content);
+   return (
+-    <main className="bg-[#070b14] px-4 py-5 text-white sm:px-6 lg:px-8 lg:py-8">
+-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4">
+-        <section
+-          className={`${styles.panel} ${styles.cut} relative overflow-hidden rounded-[30px]`}
+-        >
+-          <div className="absolute inset-y-0 right-0 hidden w-[48%] lg:block">
+-            <Image
+-              src="/nexty-showcase/hero-banner.png"
+-              alt={page.title}
+-              fill
+-              priority
+-              sizes="48vw"
+-              className="object-cover object-center"
+-            />
+-
+-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,11,20,0.96)_0%,rgba(7,11,20,0.5)_45%,rgba(7,11,20,0.74)_100%)]" />
+-          </div>
+-
+-          <div className="relative z-[1] px-6 py-10 sm:px-8 lg:px-10 lg:py-16">
+-            <Link
+-              href="/"
+-              className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff] transition hover:text-white"
+-            >
+-              <span aria-hidden="true">←</span>
+-              Kembali ke beranda
+-            </Link>
+-
+-            <p className="mt-8 text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">
+-              {eyebrow}
+-            </p>
+-
+-            <h1 className="mt-3 max-w-3xl text-[2.7rem] font-black leading-[0.95] tracking-[-0.05em] text-white sm:text-[4rem] lg:text-[4.8rem]">
+-              {page.title}
+-            </h1>
+-
+-            {page.excerpt ? (
+-              <p className="mt-6 max-w-2xl text-base leading-8 text-white/62 sm:text-lg">
+-                {page.excerpt}
+-              </p>
+-            ) : null}
+-
+-            <div className="mt-8 flex flex-wrap gap-2">
+-              <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/70">
+-                /{page.slug}
+-              </span>
+-
+-              <span className="rounded-full border border-[#3b6fff]/30 bg-[#3b6fff]/10 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[#b6c6ff]">
+-                Diperbarui {formatUpdatedAt(page.updatedAt)}
+-              </span>
+-            </div>
+-          </div>
++    <main className={`${styles.page} py-5 sm:py-8`}>
++      <div className={styles.container}>
++        <section className={`${styles.surface} relative min-h-[31rem] overflow-hidden p-6 sm:p-10`}>
++          <Image src="/nexty-showcase/hero-banner.png" alt={page.title} fill priority sizes="100vw" className="object-cover object-center opacity-65" />
++          <div className="absolute inset-0 bg-gradient-to-r from-[#080b12] via-[#080b12]/78 to-[#080b12]/22" />
++          <div className="relative z-[1] max-w-3xl"><Link href="/" className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#9db0ff]">← Kembali</Link><p className={`${styles.eyebrow} mt-12`}>{eyebrow}</p><h1 className="mt-4 text-5xl font-bold leading-[0.92] text-white sm:text-7xl">{page.title}</h1>{page.excerpt ? <p className="mt-5 max-w-2xl text-sm leading-7 text-white/58 sm:text-base">{page.excerpt}</p> : null}<p className="mt-6 text-[10px] font-bold uppercase tracking-[0.15em] text-white/32">Diperbarui {updated(page.updatedAt)}</p></div>
+         </section>
+ 
+-        <section className="grid items-start gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+-          <aside
+-            className={`${styles.panel} ${styles.cut} rounded-[28px] p-6 lg:sticky lg:top-24`}
+-          >
+-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">
+-              Informasi Halaman
+-            </p>
+-
+-            <h2 className="mt-3 text-2xl font-black leading-tight text-white">
+-              Ringkas, jelas, dan mudah dipahami.
+-            </h2>
+-
+-            <p className="mt-4 text-sm leading-7 text-white/58">
+-              Seluruh informasi pada halaman ini dikelola melalui dashboard
+-              admin dan dapat diperbarui tanpa mengubah kode program.
+-            </p>
+-
+-            <div className="mt-6 space-y-3">
+-              <Link
+-                href="/about"
+-                className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/70 transition hover:border-[#3b6fff]/30 hover:text-white"
+-              >
+-                <span>Tentang Kami</span>
+-                <span aria-hidden="true">→</span>
+-              </Link>
+-
+-              <Link
+-                href="/how-to-order"
+-                className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/70 transition hover:border-[#3b6fff]/30 hover:text-white"
+-              >
+-                <span>Cara Pemesanan</span>
+-                <span aria-hidden="true">→</span>
+-              </Link>
+-
+-              <Link
+-                href="/terms"
+-                className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/70 transition hover:border-[#3b6fff]/30 hover:text-white"
+-              >
+-                <span>Syarat & Ketentuan</span>
+-                <span aria-hidden="true">→</span>
+-              </Link>
+-
+-              <Link
+-                href="/privacy"
+-                className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/70 transition hover:border-[#3b6fff]/30 hover:text-white"
+-              >
+-                <span>Kebijakan Privasi</span>
+-                <span aria-hidden="true">→</span>
+-              </Link>
+-            </div>
+-          </aside>
+-
+-          <article
+-            className={`${styles.panelLight} ${styles.cut} rounded-[30px] p-6 text-[#0c1424] sm:p-8 lg:p-10`}
+-          >
+-            <div className="border-b border-[#0c1424]/8 pb-6">
+-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#3b6fff]">
+-                Detail Informasi
+-              </p>
+-
+-              <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-[#0c1424] sm:text-4xl">
+-                {page.title}
+-              </h2>
+-            </div>
+-
+-            <div className="mt-8 space-y-6">
+-              {contentBlocks.length > 0 ? (
+-                contentBlocks.map((block, blockIndex) => {
+-                  if (block.type === "list") {
+-                    return (
+-                      <div
+-                        key={`list-${blockIndex}`}
+-                        className="grid gap-3"
+-                      >
+-                        {block.items.map((item, itemIndex) => (
+-                          <div
+-                            key={`${item}-${itemIndex}`}
+-                            className="grid grid-cols-[38px_minmax(0,1fr)] items-start gap-4 rounded-[22px] border border-[#0c1424]/8 bg-white/70 p-4 sm:p-5"
+-                          >
+-                            <span className="flex size-9 items-center justify-center rounded-xl bg-[#0c1424] text-xs font-black text-white">
+-                              {String(itemIndex + 1).padStart(2, "0")}
+-                            </span>
+-
+-                            <p className="pt-1 text-base leading-8 text-[#243048]/78">
+-                              {item}
+-                            </p>
+-                          </div>
+-                        ))}
+-                      </div>
+-                    );
+-                  }
+-
+-                  return (
+-                    <p
+-                      key={`${block.content}-${blockIndex}`}
+-                      className="text-base leading-8 text-[#243048]/78"
+-                    >
+-                      {block.content}
+-                    </p>
+-                  );
+-                })
+-              ) : (
+-                <div className="rounded-[24px] border border-dashed border-[#0c1424]/14 bg-white/60 px-6 py-12 text-center">
+-                  <p className="font-bold text-[#0c1424]">
+-                    Konten belum tersedia
+-                  </p>
+-
+-                  <p className="mt-2 text-sm leading-7 text-[#243048]/65">
+-                    Isi halaman dapat ditambahkan melalui dashboard admin.
+-                  </p>
+-                </div>
+-              )}
+-            </div>
+-          </article>
++        <section className="grid gap-4 py-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
++          <aside className={`${styles.surface} h-fit p-5 lg:sticky lg:top-24`}><p className={styles.eyebrow}>Informasi</p><nav className="mt-5 grid gap-2">{[["Tentang Kami", "/about"], ["Cara Pemesanan", "/how-to-order"], ["Syarat & Ketentuan", "/terms"], ["Kebijakan Privasi", "/privacy"]].map(([label, href]) => <Link key={href} href={href} className="flex items-center justify-between rounded-xl border border-white/[0.07] px-3 py-3 text-xs font-bold text-white/55 hover:border-[#7089ff]/30 hover:text-white"><span>{label}</span><span>→</span></Link>)}</nav></aside>
++          <article className={`${styles.lightSurface} p-6 text-[#111827] sm:p-9 lg:p-12`}><p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#536ef0]">Detail halaman</p><h2 className="mt-3 text-4xl font-bold leading-none sm:text-5xl">{page.title}</h2><div className="mt-8 space-y-5">{content.map((block, index) => block.type === "paragraph" ? <p key={index} className="text-sm leading-8 text-slate-600 sm:text-base">{block.content}</p> : <div key={index} className="grid gap-3">{block.items.map((item, itemIndex) => <div key={item} className="grid grid-cols-[2.5rem_1fr] gap-3 rounded-2xl border border-slate-200 bg-white p-4"><span className="flex size-9 items-center justify-center rounded-xl bg-[#111827] text-[10px] font-extrabold text-white">{String(itemIndex + 1).padStart(2, "0")}</span><p className="pt-1 text-sm leading-7 text-slate-600">{item}</p></div>)}</div>)}</div></article>
+         </section>
+       </div>
+     </main>
+diff --git a/components/public/product-card.tsx b/components/public/product-card.tsx
+index 96f2e71..c29d876 100644
+--- a/components/public/product-card.tsx
++++ b/components/public/product-card.tsx
+@@ -1,87 +1,37 @@
+ import Image from "next/image";
+ 
+ import type { Product } from "@/features/products/product.types";
+-import styles from "@/components/public/game-commerce.module.css";
+ 
+-type ProductCardProps = {
+-  product: Product;
+-  categoryName: string;
+-  whatsappUrl: string | null;
+-  fallbackImage: string;
+-};
+-
+-function formatRupiah(value: number) {
+-  return new Intl.NumberFormat("id-ID", {
+-    style: "currency",
+-    currency: "IDR",
+-    maximumFractionDigits: 0,
+-  }).format(value);
++function rupiah(value: number) {
++  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
+ }
+ 
+-export function ProductCard({ product, categoryName, whatsappUrl, fallbackImage }: ProductCardProps) {
+-  const finalPrice = product.discountPrice ?? product.price;
+-  const imageSrc = product.thumbnail?.secureUrl || fallbackImage;
+-  const imageAlt = product.thumbnail?.alt || product.name;
++export function ProductCard({ product, categoryName, whatsappUrl, fallbackImage }: { product: Product; categoryName: string; whatsappUrl: string | null; fallbackImage: string }) {
++  const price = product.discountPrice ?? product.price;
++  const image = product.thumbnail?.secureUrl || fallbackImage;
+ 
+   return (
+-    <article className={`${styles.panel} ${styles.cut} ${styles.tileHover} group flex h-full min-w-[240px] max-w-[300px] flex-col rounded-[24px] bg-[#0a0e18]`}>
+-      <div className={`relative aspect-[4/5] overflow-hidden ${styles.thumbMask}`}>
+-        <Image
+-          src={imageSrc}
+-          alt={imageAlt}
+-          fill
+-          sizes="(max-width: 640px) 74vw, (max-width: 1024px) 33vw, 260px"
+-          className="object-cover transition duration-500 group-hover:scale-[1.04]"
+-        />
+-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,16,0.12),rgba(5,8,16,0.28)_45%,rgba(5,8,16,0.88)_100%)]" />
+-        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+-          <span className="rounded-full border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white/88 backdrop-blur-md">
+-            {categoryName}
+-          </span>
+-          {product.isFeatured ? (
+-            <span className="rounded-full border border-[#7fa0ff]/30 bg-[#3b6fff]/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#dce5ff]">
+-              Featured
+-            </span>
+-          ) : null}
+-        </div>
++    <article className="group overflow-hidden rounded-[22px] border border-white/[0.08] bg-[#101722] transition duration-300 hover:-translate-y-1 hover:border-[#7089ff]/35 hover:shadow-[0_22px_50px_rgba(0,0,0,0.28)]">
++      <div className="relative aspect-[4/3] overflow-hidden">
++        <Image src={image} alt={product.thumbnail?.alt || product.name} fill sizes="(max-width:640px) 78vw, 280px" className="object-cover transition duration-500 group-hover:scale-[1.035]" />
++        <div className="absolute inset-0 bg-gradient-to-t from-[#0d121c] via-transparent to-transparent" />
++        <span className="absolute left-3 top-3 rounded-full border border-white/10 bg-black/40 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/80 backdrop-blur">{categoryName}</span>
+       </div>
+-
+-      <div className="flex flex-1 flex-col p-4">
+-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#8ea7ff]">{product.code}</p>
+-        <h3 className="mt-2 line-clamp-2 text-xl font-black leading-tight text-white">{product.name}</h3>
+-        <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/58">{product.shortDescription}</p>
+-
+-        <div className="mt-auto pt-5">
+-          <div className="flex items-end justify-between gap-3">
+-            <div>
+-              <p className="text-[11px] uppercase tracking-[0.14em] text-white/35">Mulai dari</p>
+-              <p className="mt-1 text-xl font-black text-white">{formatRupiah(finalPrice)}</p>
+-              {product.discountPrice !== null ? (
+-                <p className="mt-1 text-xs text-white/30 line-through">{formatRupiah(product.price)}</p>
+-              ) : null}
+-            </div>
+-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white/72">
+-              {product.stockStatus === "limited" ? "Terbatas" : "Tersedia"}
+-            </span>
++      <div className="p-4">
++        <div className="flex items-start justify-between gap-3">
++          <div className="min-w-0">
++            <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#93a6ff]">{product.code}</p>
++            <h3 className="mt-1 line-clamp-2 text-lg font-bold leading-tight text-white">{product.name}</h3>
+           </div>
+-
+-          {whatsappUrl ? (
+-            <a
+-              href={whatsappUrl}
+-              target="_blank"
+-              rel="noreferrer"
+-              className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#3b6fff] px-4 text-sm font-bold text-white transition hover:bg-[#4e74ff]"
+-            >
+-              Pesan Sekarang
+-            </a>
+-          ) : (
+-            <a
+-              href="#kontak"
+-              className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-4 text-sm font-bold text-white/78"
+-            >
+-              Lihat Kontak
+-            </a>
+-          )}
++          {product.isFeatured ? <span className="shrink-0 rounded-full bg-[#5f7cff]/14 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#b7c4ff]">Pilihan</span> : null}
++        </div>
++        <p className="mt-2 line-clamp-2 text-xs leading-5 text-white/48">{product.shortDescription}</p>
++        <div className="mt-4 flex items-end justify-between gap-3 border-t border-white/[0.07] pt-4">
++          <div>
++            <p className="text-[9px] uppercase tracking-[0.14em] text-white/32">Mulai dari</p>
++            <p className="mt-1 text-base font-extrabold text-white">{rupiah(price)}</p>
++          </div>
++          {whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center justify-center rounded-lg bg-[#5f7cff] px-3 text-[11px] font-extrabold text-white">Pesan</a> : <a href="#kontak" className="inline-flex h-9 items-center justify-center rounded-lg border border-white/10 px-3 text-[11px] font-extrabold text-white/70">Kontak</a>}
+         </div>
+       </div>
+     </article>
+diff --git a/components/public/site-footer.tsx b/components/public/site-footer.tsx
+index c6c50ec..5dcb59c 100644
+--- a/components/public/site-footer.tsx
++++ b/components/public/site-footer.tsx
+@@ -4,101 +4,39 @@ import styles from "@/components/public/game-commerce.module.css";
+ import type { SiteSettings } from "@/features/settings/settings.types";
+ import { createWhatsAppUrl } from "@/lib/whatsapp";
+ 
+-type SiteFooterProps = {
+-  settings: SiteSettings;
+-};
+-
+-function createInitials(value: string) {
+-  const words = value.trim().split(/\s+/).filter(Boolean);
+-  if (words.length === 0) return "DP";
+-  return words.slice(0, 2).map((word) => word[0]?.toUpperCase()).join("");
++function initials(value: string) {
++  return value.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]?.toUpperCase()).join("") || "DP";
+ }
+ 
+-export function SiteFooter({ settings }: SiteFooterProps) {
+-  const whatsappUrl = createWhatsAppUrl(
+-    settings.whatsappNumber,
+-    "Halo Admin, saya ingin bertanya mengenai produk yang tersedia.",
+-  );
+-
+-  const socialLinks = [
+-    { label: "Instagram", href: settings.instagramUrl },
+-    { label: "TikTok", href: settings.tiktokUrl },
+-    { label: "Facebook", href: settings.facebookUrl },
+-    { label: "YouTube", href: settings.youtubeUrl },
+-  ].filter((item): item is { label: string; href: string } => Boolean(item.href));
++export function SiteFooter({ settings }: { settings: SiteSettings }) {
++  const whatsappUrl = createWhatsAppUrl(settings.whatsappNumber, "Halo Admin, saya ingin bertanya mengenai produk yang tersedia.");
++  const socials = [
++    ["Instagram", settings.instagramUrl],
++    ["TikTok", settings.tiktokUrl],
++    ["Facebook", settings.facebookUrl],
++    ["YouTube", settings.youtubeUrl],
++  ].filter((item): item is [string, string] => Boolean(item[1]));
+ 
+   return (
+-    <footer id="kontak" className="bg-[#070b14] px-4 pb-10 sm:px-6 lg:px-8">
+-      <div className={`${styles.panel} ${styles.cut} mx-auto w-full max-w-[1440px] rounded-[30px] px-6 py-8 sm:px-8 lg:px-10 lg:py-10`}>
+-        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.8fr_0.8fr_0.95fr]">
+-          <div>
+-            <Link href="/" className="flex items-center gap-3">
+-              <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-[#0f1730] text-sm font-black text-white">
+-                {createInitials(settings.businessName)}
+-              </span>
+-              <span>
+-                <span className="block text-base font-black uppercase tracking-[0.04em] text-white">{settings.businessName}</span>
+-                <span className="mt-0.5 block text-[11px] font-bold uppercase tracking-[0.22em] text-[#8ea7ff]">
+-                  Digital Product Store
+-                </span>
+-              </span>
+-            </Link>
+-
+-            <h2 className="mt-8 max-w-sm text-[2.1rem] font-black leading-[0.95] tracking-[-0.05em] text-white sm:text-[2.8rem]">
+-              Your digital loadout starts here.
+-            </h2>
+-            <p className="mt-4 max-w-md text-sm leading-7 text-white/58">
+-              {settings.businessDescription || "Katalog produk digital yang menyediakan top up game, akun game, aplikasi premium, dan nomor kosong."}
+-            </p>
+-          </div>
+-
+-          <div>
+-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">Navigasi</p>
+-            <div className="mt-5 grid gap-3">
+-              <Link href="/#kategori" className="text-sm text-white/68 transition hover:text-white">Kategori</Link>
+-              <Link href="/#produk" className="text-sm text-white/68 transition hover:text-white">Katalog Produk</Link>
+-              <Link href="/about" className="text-sm text-white/68 transition hover:text-white">Cara Pemesanan</Link>
+-              <Link href="/#faq" className="text-sm text-white/68 transition hover:text-white">Tentang Kami</Link>
+-            </div>
+-          </div>
+-
+-          <div>
+-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">Informasi</p>
+-            <div className="mt-5 grid gap-3">
+-              <Link href="/about" className="text-sm text-white/68 transition hover:text-white">Tentang Kami</Link>
+-              <Link href="/privacy" className="text-sm text-white/68 transition hover:text-white">Kebijakan Privasi</Link>
+-              <Link href="/terms" className="text-sm text-white/68 transition hover:text-white">FAQ</Link>
++    <footer id="kontak" className="bg-[#080b12] pb-8 pt-2">
++      <div className={styles.container}>
++        <div className={`${styles.surface} p-6 sm:p-8 lg:p-10`}>
++          <div className={styles.footerGrid}>
++            <div>
++              <Link href="/" className="flex items-center gap-3">
++                <span className="flex size-11 items-center justify-center rounded-xl border border-[#7089ff]/25 bg-[#151d30] text-xs font-extrabold text-white">{initials(settings.businessName)}</span>
++                <span><span className="block text-sm font-extrabold text-white">{settings.businessName}</span><span className="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.18em] text-[#93a6ff]">Digital storefront</span></span>
++              </Link>
++              <h2 className="mt-7 max-w-md text-4xl font-bold leading-none text-white">Loadout digitalmu dimulai dari katalog yang jelas.</h2>
++              <p className="mt-4 max-w-md text-sm leading-7 text-white/48">{settings.businessDescription || settings.businessTagline}</p>
++              {socials.length > 0 ? <div className="mt-5 flex flex-wrap gap-2">{socials.map(([label, href]) => <a key={label} href={href} target="_blank" rel="noreferrer" className="rounded-full border border-white/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.13em] text-white/58 hover:text-white">{label}</a>)}</div> : null}
+             </div>
+-          </div>
+ 
+-          <div>
+-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8ea7ff]">Kontak</p>
+-            <div className="mt-5 space-y-3 text-sm text-white/68">
+-              {settings.email ? <a href={`mailto:${settings.email}`} className="block transition hover:text-white">{settings.email}</a> : null}
+-              {settings.address ? <p>{settings.address}</p> : null}
+-              {settings.operatingHours ? <p className="whitespace-pre-line">{settings.operatingHours}</p> : null}
+-              {whatsappUrl ? (
+-                <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex h-11 items-center justify-center rounded-xl bg-[#3b6fff] px-4 text-sm font-black text-white">
+-                  Chat Admin
+-                </a>
+-              ) : null}
+-            </div>
+-
+-            {socialLinks.length > 0 ? (
+-              <div className="mt-5 flex flex-wrap gap-2">
+-                {socialLinks.map((item) => (
+-                  <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/75">
+-                    {item.label}
+-                  </a>
+-                ))}
+-              </div>
+-            ) : null}
++            <div><p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#93a6ff]">Navigasi</p><div className="mt-4 grid gap-3 text-sm text-white/52"><Link href="/#kategori">Kategori</Link><Link href="/#produk">Produk</Link><Link href="/#cara-pesan">Cara Pesan</Link><Link href="/about">Tentang</Link></div></div>
++            <div><p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#93a6ff]">Informasi</p><div className="mt-4 grid gap-3 text-sm text-white/52"><Link href="/terms">Syarat & Ketentuan</Link><Link href="/privacy">Kebijakan Privasi</Link><Link href="/#faq">FAQ</Link></div></div>
++            <div><p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#93a6ff]">Kontak</p><div className="mt-4 space-y-3 text-sm leading-6 text-white/52">{settings.email ? <a className="block" href={`mailto:${settings.email}`}>{settings.email}</a> : null}{settings.address ? <p>{settings.address}</p> : null}{settings.operatingHours ? <p className="whitespace-pre-line">{settings.operatingHours}</p> : null}{whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex h-10 items-center justify-center rounded-lg bg-[#5f7cff] px-4 text-xs font-extrabold text-white">Chat Admin</a> : null}</div></div>
+           </div>
+-        </div>
+-
+-        <div className="mt-10 flex flex-col gap-3 border-t border-white/8 pt-5 text-xs text-white/38 sm:flex-row sm:items-center sm:justify-between">
+-          <p>© {new Date().getFullYear()} {settings.businessName}. All rights reserved.</p>
+-          <p>Pemesanan diproses secara manual melalui admin.</p>
++          <div className="mt-9 flex flex-col gap-2 border-t border-white/[0.07] pt-5 text-[10px] uppercase tracking-[0.12em] text-white/28 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} {settings.businessName}</p><p>Pemesanan manual melalui admin</p></div>
+         </div>
+       </div>
+     </footer>
+diff --git a/components/public/site-header.tsx b/components/public/site-header.tsx
+index 5047bb3..68a2cc5 100644
+--- a/components/public/site-header.tsx
++++ b/components/public/site-header.tsx
+@@ -4,141 +4,69 @@ import Link from "next/link";
+ import { usePathname } from "next/navigation";
+ import { useEffect, useState } from "react";
+ 
+-import styles from "@/components/public/game-commerce.module.css";
++const items = [
++  ["Beranda", "/#beranda"],
++  ["Kategori", "/#kategori"],
++  ["Produk", "/#produk"],
++  ["Cara Pesan", "/#cara-pesan"],
++  ["Tentang", "/about"],
++  ["FAQ", "/#faq"],
++] as const;
+ 
+-type SiteHeaderProps = {
+-  businessName: string;
+-  whatsappUrl: string | null;
+-};
+-
+-const navigationItems = [
+-  { label: "Beranda", href: "/#beranda" },
+-  { label: "Kategori", href: "/#kategori" },
+-  { label: "Produk", href: "/#produk" },
+-  { label: "Cara Pesan", href: "/#cara-pesan" },
+-  { label: "Tentang Kami", href: "/about" },
+-  { label: "FAQ", href: "/#faq" },
+-];
+-
+-function createInitials(value: string) {
+-  const words = value.trim().split(/\s+/).filter(Boolean);
+-  if (words.length === 0) return "DP";
+-  return words.slice(0, 2).map((word) => word[0]?.toUpperCase()).join("");
++function initials(value: string) {
++  return value.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]?.toUpperCase()).join("") || "DP";
+ }
+ 
+-export function SiteHeader({ businessName, whatsappUrl }: SiteHeaderProps) {
++export function SiteHeader({ businessName, whatsappUrl }: { businessName: string; whatsappUrl: string | null }) {
+   const pathname = usePathname();
+-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+-
+-  useEffect(() => {
+-    setIsMenuOpen(false);
+-  }, [pathname]);
++  const [open, setOpen] = useState(false);
+ 
++  useEffect(() => setOpen(false), [pathname]);
+   useEffect(() => {
+-    if (!isMenuOpen) return;
+-    const previousOverflow = document.body.style.overflow;
++    if (!open) return;
++    const previous = document.body.style.overflow;
+     document.body.style.overflow = "hidden";
+-    return () => {
+-      document.body.style.overflow = previousOverflow;
+-    };
+-  }, [isMenuOpen]);
++    return () => { document.body.style.overflow = previous; };
++  }, [open]);
+ 
+   return (
+     <>
+-      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#060913]/80 backdrop-blur-xl">
+-        <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
+-          <Link href="/" className="flex items-center gap-3">
+-            <span className={`relative flex size-12 items-center justify-center overflow-hidden rounded-2xl bg-[#0d1530] text-sm font-black text-white ${styles.softRing}`}>
+-              <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,111,255,0.45),transparent_55%)]" />
+-              <span className="relative z-[1]">{createInitials(businessName)}</span>
+-            </span>
+-
++      <header className="sticky top-0 z-50 border-b border-white/[0.07] bg-[#080b12]/88 backdrop-blur-xl">
++        <div className="mx-auto flex h-[72px] w-[min(calc(100%-2rem),1360px)] items-center justify-between gap-4 px-4 sm:px-0">
++          <Link href="/" className="flex min-w-0 items-center gap-3">
++            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[#6d86ff]/25 bg-[#151d30] text-xs font-extrabold text-white">{initials(businessName)}</span>
+             <span className="min-w-0">
+-              <span className="block truncate text-sm font-black uppercase tracking-[0.04em] text-white sm:text-base">
+-                {businessName}
+-              </span>
+-              <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8ea7ff] sm:text-[11px]">
+-                Digital Product Store
+-              </span>
++              <span className="block truncate text-sm font-extrabold tracking-[-0.02em] text-white">{businessName}</span>
++              <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.2em] text-[#93a6ff]">Digital storefront</span>
+             </span>
+           </Link>
+ 
+           <nav className="hidden items-center gap-1 lg:flex">
+-            {navigationItems.map((item) => (
+-              <Link
+-                key={item.href}
+-                href={item.href}
+-                className="rounded-xl px-3.5 py-2 text-sm font-semibold text-white/72 transition hover:bg-white/5 hover:text-white"
+-              >
+-                {item.label}
+-              </Link>
++            {items.map(([label, href]) => (
++              <Link key={href} href={href} className="rounded-lg px-3 py-2 text-xs font-bold text-white/58 transition hover:bg-white/[0.05] hover:text-white">{label}</Link>
+             ))}
+           </nav>
+ 
+           <div className="flex items-center gap-2">
+-            {whatsappUrl ? (
+-              <a
+-                href={whatsappUrl}
+-                target="_blank"
+-                rel="noreferrer"
+-                className="hidden h-11 items-center justify-center rounded-xl bg-[#3b6fff] px-4 text-sm font-bold text-white transition hover:bg-[#5077ff] sm:inline-flex"
+-              >
+-                Chat Admin
+-              </a>
+-            ) : null}
+-
+-            <button
+-              type="button"
+-              onClick={() => setIsMenuOpen((current) => !current)}
+-              className="inline-flex size-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white lg:hidden"
+-              aria-label={isMenuOpen ? "Tutup menu" : "Buka menu"}
+-            >
+-              {isMenuOpen ? (
+-                <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+-                  <path d="m6 6 12 12" />
+-                  <path d="M18 6 6 18" />
+-                </svg>
+-              ) : (
+-                <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+-                  <path d="M4 7h16" />
+-                  <path d="M4 12h16" />
+-                  <path d="M4 17h16" />
+-                </svg>
+-              )}
++            {whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noreferrer" className="hidden h-10 items-center justify-center rounded-lg bg-[#5f7cff] px-4 text-xs font-extrabold text-white transition hover:bg-[#7089ff] sm:inline-flex">Chat Admin</a> : null}
++            <button type="button" aria-label={open ? "Tutup menu" : "Buka menu"} onClick={() => setOpen((value) => !value)} className="inline-flex size-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white lg:hidden">
++              {open ? "×" : "☰"}
+             </button>
+           </div>
+         </div>
+       </header>
+ 
+-      {isMenuOpen ? (
+-        <div className="fixed inset-0 z-40 bg-[#04070f]/84 backdrop-blur-md lg:hidden">
+-          <div className="mx-4 mt-24 rounded-[28px] border border-white/10 bg-[#0b101d] p-4 shadow-2xl shadow-black/40 sm:mx-6">
+-            <nav className="grid gap-2">
+-              {navigationItems.map((item, index) => (
+-                <Link
+-                  key={item.href}
+-                  href={item.href}
+-                  onClick={() => setIsMenuOpen(false)}
+-                  className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/80"
+-                >
+-                  <span>{item.label}</span>
+-                  <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#8ea7ff]">
+-                    {String(index + 1).padStart(2, "0")}
+-                  </span>
++      {open ? (
++        <div className="fixed inset-0 z-40 bg-[#05070c]/86 px-4 pt-24 backdrop-blur-lg lg:hidden">
++          <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-[#101621] p-3 shadow-2xl">
++            <nav className="grid gap-1">
++              {items.map(([label, href], index) => (
++                <Link key={href} href={href} onClick={() => setOpen(false)} className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/[0.05] hover:text-white">
++                  <span>{label}</span><span className="text-[10px] text-[#93a6ff]">{String(index + 1).padStart(2, "0")}</span>
+                 </Link>
+               ))}
+             </nav>
+-
+-            {whatsappUrl ? (
+-              <a
+-                href={whatsappUrl}
+-                target="_blank"
+-                rel="noreferrer"
+-                className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[#3b6fff] px-4 text-sm font-bold text-white"
+-              >
+-                Hubungi Admin
+-              </a>
+-            ) : null}
++            {whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-3 flex h-11 items-center justify-center rounded-xl bg-[#5f7cff] text-sm font-extrabold text-white">Hubungi Admin</a> : null}
+           </div>
+         </div>
+       ) : null}
+diff --git a/features/public/public.service.ts b/features/public/public.service.ts
+index 222756d..00aa1bb 100644
+--- a/features/public/public.service.ts
++++ b/features/public/public.service.ts
+@@ -24,6 +24,7 @@ export type PublicHomeData = {
+   categories: Category[];
+   products: Product[];
+   heroBanner: ContentItem | null;
++  banners: ContentItem[];
+   testimonials: ContentItem[];
+   faqs: ContentItem[];
+ };
+@@ -117,6 +118,7 @@ export async function getPublicHomeData(): Promise<PublicHomeData> {
+     categories: activeCategories,
+     products: selectedProducts,
+     heroBanner: publishedBanners[0] ?? null,
++    banners: publishedBanners.slice(0, 4),
+     testimonials: publishedTestimonials,
+     faqs: publishedFaqs,
+   };
